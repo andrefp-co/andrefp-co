@@ -1,0 +1,34 @@
+# Draws the contribution graph as a snake that eats it, in the colors of
+# andres.swort.net, and publishes the SVGs to the `output` branch, where the
+# README loads them. Runs daily, on every push to main, and on demand.
+name: Contribution snake
+
+on:
+  schedule:
+    - cron: "41 5 * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: Platane/snk@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            dist/snake-dark.svg?palette=github-dark&color_snake=#f8f8f8&color_dots=#161b22,#2b2f36,#4a4f57,#8d9297,#f8f8f8
+            dist/snake-light.svg?color_snake=#050505&color_dots=#ebedf0,#c6c9cc,#8d9297,#55595f,#181818
+
+      - uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: output
+          build_dir: dist
+          commit_message: Update contribution snake
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
